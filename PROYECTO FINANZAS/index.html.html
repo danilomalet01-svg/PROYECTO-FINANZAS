@@ -1,0 +1,1145 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>FinanzasApp</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+<script>
+const firebaseConfig={apiKey:"AIzaSyAzjCIjNzR8c__Otd0vUUintrEsHfq6K1U",authDomain:"finanzas-personales-97cea.firebaseapp.com",databaseURL:"https://finanzas-personales-97cea-default-rtdb.firebaseio.com",projectId:"finanzas-personales-97cea",storageBucket:"finanzas-personales-97cea.firebasestorage.app",messagingSenderId:"60366236431",appId:"1:60366236431:web:691833aac7072f97892c7a"};
+firebase.initializeApp(firebaseConfig);
+const db=firebase.database();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:#0f1117;color:#f1f5f9;font-family:'DM Sans',sans-serif;}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:#1e2130}::-webkit-scrollbar-thumb{background:#3f4460;border-radius:2px}
+.card{background:#181c2a;border:1px solid #252a3d;border-radius:16px}
+.card-sm{background:#1e2130;border:1px solid #252a3d;border-radius:12px}
+.btn-primary{background:#6366f1;color:#fff;border:none;border-radius:10px;padding:10px 20px;font-family:inherit;font-weight:600;cursor:pointer;font-size:14px;transition:all .15s}
+.btn-primary:hover{background:#5254cc;transform:translateY(-1px)}
+.btn-ghost{background:transparent;color:#94a3b8;border:1px solid #252a3d;border-radius:10px;padding:10px 20px;font-family:inherit;font-weight:500;cursor:pointer;font-size:14px;transition:all .15s}
+.btn-ghost:hover{background:#252a3d;color:#f1f5f9}
+.btn-green{background:#10b981;color:#fff;border:none;border-radius:10px;padding:10px 20px;font-family:inherit;font-weight:600;cursor:pointer;font-size:14px;transition:all .15s}
+.btn-green:hover{background:#059669}
+.input{background:#0f1117;border:1px solid #252a3d;border-radius:10px;padding:10px 14px;color:#f1f5f9;font-family:inherit;font-size:14px;width:100%;outline:none;transition:border .15s}
+.input:focus{border-color:#6366f1}
+.input option{background:#0f1117}
+.nav-item{display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 6px;border-radius:10px;cursor:pointer;transition:all .15s;font-size:10px;font-weight:500;color:#64748b;border:none;background:transparent}
+.nav-item.active{color:#6366f1;background:rgba(99,102,241,.12)}
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:100;display:flex;align-items:flex-end;justify-content:center}
+@media(min-width:640px){.modal-bg{align-items:center;padding:20px}}
+.modal{background:#181c2a;border:1px solid #252a3d;border-radius:20px 20px 0 0;width:100%;max-width:500px;padding:24px;max-height:90vh;overflow-y:auto}
+@media(min-width:640px){.modal{border-radius:20px}}
+.row-item{display:flex;align-items:center;gap:12px;padding:12px;border-radius:10px;transition:background .1s}
+.row-item:hover{background:#252a3d22}
+.progress-bar{height:8px;border-radius:4px;background:#252a3d;overflow:hidden}
+.progress-fill{height:100%;border-radius:4px;transition:width .6s ease}
+.amount-display{font-family:'DM Mono',monospace}
+.chip{padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid transparent;font-family:inherit}
+.action-btn{background:transparent;border:none;cursor:pointer;font-size:16px;padding:4px;border-radius:6px;transition:opacity .15s;flex-shrink:0;opacity:0}
+.row-item:hover .action-btn{opacity:1}
+.pm-pill{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:20px;font-size:11px;font-weight:600}
+.cuota-badge{display:inline-flex;align-items:center;padding:1px 6px;border-radius:6px;font-size:10px;font-weight:700;background:rgba(99,102,241,.2);color:#a5b4fc}
+.neg-badge{display:inline-flex;align-items:center;padding:1px 6px;border-radius:6px;font-size:10px;font-weight:700;background:rgba(16,185,129,.15);color:#10b981}
+.auto-badge{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:6px;font-size:10px;font-weight:700;background:rgba(245,158,11,.15);color:#f59e0b}
+.paid-badge{display:inline-flex;align-items:center;padding:1px 6px;border-radius:6px;font-size:10px;font-weight:700;background:rgba(16,185,129,.15);color:#10b981}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.fade-up{animation:fadeUp .3s ease}
+.pm-btn{flex:1;padding:10px 6px;border-radius:10px;border:2px solid #252a3d;background:#0f1117;color:#94a3b8;cursor:pointer;font-family:inherit;font-size:11px;font-weight:600;transition:all .15s;text-align:center}
+.pm-btn.selected{border-color:#6366f1;color:#f1f5f9;background:rgba(99,102,241,.12)}
+.section-title{font-size:12px;color:#64748b;font-weight:600;margin-bottom:10px;padding:0 4px;letter-spacing:.5px}
+.search-bar{background:#181c2a;border:1px solid #252a3d;border-radius:12px;padding:10px 14px;color:#f1f5f9;font-family:inherit;font-size:14px;width:100%;outline:none;margin-bottom:14px}
+.search-bar:focus{border-color:#6366f1}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const{useState,useMemo,useEffect}=React;
+
+// ── Firebase persistence ──────────────────────────────────────────────────────
+function loadData(key,def){try{const v=localStorage.getItem(key);return v?JSON.parse(v):def;}catch{return def;}}
+function saveData(key,val){try{localStorage.setItem(key,JSON.stringify(val));db.ref(key).set(val);}catch(e){console.warn(e);}}
+
+// ── Holidays AR ───────────────────────────────────────────────────────────────
+const AR_HOLIDAYS=new Set(["01-01","03-03","03-04","04-02","05-01","05-25","06-20","07-09","08-17","10-12","11-20","12-08","12-25"]);
+function isHolidayAR(d){return AR_HOLIDAYS.has(`${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`);}
+function isNonBusiness(d){const w=d.getDay();return w===0||w===6||isHolidayAR(d);}
+function nextBusiness(date){const d=new Date(date);while(isNonBusiness(d))d.setDate(d.getDate()+1);return d;}
+
+// ── Card dates ────────────────────────────────────────────────────────────────
+function visaClose(y,m){const ts=[];const d=new Date(y,m,1);while(d.getMonth()===m){if(d.getDay()===4)ts.push(new Date(d));d.setDate(d.getDate()+1);}return ts.reduce((p,c)=>Math.abs(c.getDate()-15)<Math.abs(p.getDate()-15)?c:p);}
+function visaDue(close){const d=new Date(close);d.setDate(d.getDate()+13);return d;}
+function mpClose(y,m){return new Date(y,m,18);}
+function mpDue(y,m){return nextBusiness(new Date(y,m,23));}
+
+function getVencimiento(dateStr,pm){
+  const p=new Date(dateStr+"T12:00:00"),y=p.getFullYear(),m=p.getMonth();
+  if(pm==="mercadopago"){const c=mpClose(y,m);return p<=c?mpDue(y,m):mpDue(y,m+1>11?0:m+1);}
+  if(pm==="visa"){const c=visaClose(y,m);if(p<=c)return visaDue(c);const nm=m+1>11?0:m+1,ny=m+1>11?y+1:y;return visaDue(visaClose(ny,nm));}
+  return p;
+}
+function getEgresoMonth(dateStr,pm){
+  const purchase=new Date(dateStr+"T12:00:00");
+  const y=purchase.getFullYear(),m=purchase.getMonth();
+  if(pm==="visa"){
+    const close=visaClose(y,m);
+    if(purchase<=close){
+      // Imputes in current month's closing month
+      return{year:y,month:m};
+    } else {
+      // After closing: imputes in next month's closing month
+      const nm=m+1>11?0:m+1,ny=m+1>11?y+1:y;
+      return{year:ny,month:nm};
+    }
+  }
+  if(pm==="mercadopago"){
+    const close=mpClose(y,m);
+    if(purchase<=close) return{year:y,month:m};
+    const nm=m+1>11?0:m+1,ny=m+1>11?y+1:y;
+    return{year:ny,month:nm};
+  }
+  return{year:y,month:m};
+}
+function cuotaDue(first,i){const d=new Date(first);d.setMonth(d.getMonth()+i);return d;}
+function mkey(y,m){return`${y}-${String(m+1).padStart(2,"0")}`;}
+function d2s(d){return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;}
+function fmtD(ds){if(!ds)return"";const[y,m,d]=ds.split("-");return`${d}/${m}/${y}`;}
+function fmtDO(d){return`${String(d.getDate()).padStart(2,"0")}/${String(d.getMonth()+1).padStart(2,"0")}/${d.getFullYear()}`;}
+
+// ── Constants ─────────────────────────────────────────────────────────────────
+const CATS=[
+  {id:"vivienda",label:"Vivienda",icon:"🏠",color:"#6366f1"},
+  {id:"alimentacion",label:"Alimentación",icon:"🛒",color:"#f59e0b"},
+  {id:"transporte",label:"Transporte",icon:"🚗",color:"#10b981"},
+  {id:"salud",label:"Salud",icon:"💊",color:"#ef4444"},
+  {id:"entretenimiento",label:"Entrete.",icon:"🎬",color:"#8b5cf6"},
+  {id:"ropa",label:"Ropa",icon:"👕",color:"#ec4899"},
+  {id:"educacion",label:"Educación",icon:"📚",color:"#06b6d4"},
+  {id:"inversiones",label:"Inversiones",icon:"📈",color:"#14b8a6"},
+  {id:"prestamos",label:"Préstamos",icon:"🤝",color:"#f97316"},
+  {id:"otros",label:"Otros",icon:"📦",color:"#6b7280"},
+];
+const PMS=[
+  {id:"efectivo",label:"Efectivo/Cuenta",icon:"💵",color:"#10b981"},
+  {id:"visa",label:"Visa",icon:"💳",color:"#1a56db"},
+  {id:"mercadopago",label:"Mercado Pago",icon:"🔵",color:"#009ee3"},
+];
+const MONTHS=["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+const fmtCur=a=>new Intl.NumberFormat("es-AR",{style:"currency",currency:"ARS",maximumFractionDigits:0}).format(a);
+const todayStr=()=>new Date().toISOString().split("T")[0];
+const curMonthKey=()=>{const d=new Date();return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`;};
+
+// ── App ───────────────────────────────────────────────────────────────────────
+function App(){
+  const PIN="199739";
+  const[unlocked,setUnlocked]=useState(()=>sessionStorage.getItem("fp_unlocked")==="1");
+  const[pinInput,setPinInput]=useState("");
+  const[pinError,setPinError]=useState(false);
+  function tryUnlock(){if(pinInput===PIN){sessionStorage.setItem("fp_unlocked","1");setUnlocked(true);setPinError(false);}else{setPinError(true);setPinInput("");}}
+
+  const[view,setView]=useState("dashboard");
+  const[expenses,setExpenses]=useState(()=>loadData("fp_expenses",[]));
+  const[incomes,setIncomes]=useState(()=>loadData("fp_incomes",[]));
+  const[planned,setPlanned]=useState(()=>loadData("fp_planned",[]));
+  const[autoPaid,setAutoPaid]=useState(()=>loadData("fp_autopaid",{})); // {id: {pm, egresoMonth}}
+  const[filterMonth,setFilterMonth]=useState(curMonthKey());
+  const[nextId,setNextId]=useState(()=>loadData("fp_nextid",1));
+  const[search,setSearch]=useState("");
+
+  // Modals
+  const[showCardDetail,setShowCardDetail]=useState(null); // 'visa' | 'mercadopago'
+  const[showDebug,setShowDebug]=useState(false);
+  const[showAddExp,setShowAddExp]=useState(false);
+  const[showAddPlan,setShowAddPlan]=useState(false);
+  const[showAddInc,setShowAddInc]=useState(false);
+  const[showCardInfo,setShowCardInfo]=useState(false);
+  const[showPayModal,setShowPayModal]=useState(null); // {id, type:'manual'|'auto', amount}
+  const[editingPlan,setEditingPlan]=useState(null);
+
+  // Forms
+  const defExpForm={date:todayStr(),description:"",amount:"",category:"alimentacion",paymentMethod:"visa",installments:"1",hasInterest:false,finalAmount:""};
+  const defPlanForm={description:"",amount:"",category:"otros",dueDate:"",recurring:false,paymentMethod:"efectivo",hasInterest:false,finalAmount:""};
+  const defIncForm={date:todayStr(),description:"",amount:"",type:"ingreso",returnAmount:"",dueDate:""};
+  const[expForm,setExpForm]=useState(defExpForm);
+  const[planForm,setPlanForm]=useState(defPlanForm);
+  const[incForm,setIncForm]=useState(defIncForm);
+
+  // Firebase sync
+  useEffect(()=>{
+    const refs=[
+      {key:"fp_expenses",set:setExpenses},
+      {key:"fp_incomes",set:setIncomes},
+      {key:"fp_planned",set:setPlanned},
+      {key:"fp_autopaid",set:setAutoPaid},
+    ];
+    const uns=refs.map(({key,set})=>{
+      const r=db.ref(key);
+      const fn=r.on("value",s=>{const v=s.val();if(v!==null&&v!==undefined)set(v);});
+      return()=>r.off("value",fn);
+    });
+    const nr=db.ref("fp_nextid");
+    const nf=nr.on("value",s=>{const v=s.val();if(v!==null)setNextId(v);});
+    return()=>{uns.forEach(u=>u());nr.off("value",nf);};
+  },[]);
+
+  function persist(key,val){saveData(key,val);}
+  function setExp(fn){setExpenses(p=>{const n=typeof fn==="function"?fn(p):fn;persist("fp_expenses",n);return n;});}
+  function setPlan(fn){setPlanned(p=>{const n=typeof fn==="function"?fn(p):fn;persist("fp_planned",n);return n;});}
+  function setInc(fn){setIncomes(p=>{const n=typeof fn==="function"?fn(p):fn;persist("fp_incomes",n);return n;});}
+  function setAP(fn){setAutoPaid(p=>{const n=typeof fn==="function"?fn(p):fn;persist("fp_autopaid",n);return n;});}
+  function newId(){const id=nextId;const nx=id+1;setNextId(nx);persist("fp_nextid",nx);return id;}
+
+  const[fYear,fMonth]=useMemo(()=>{const[y,m]=filterMonth.split("-").map(Number);return[y,m-1];},[filterMonth]);
+
+  // ── Derived: installment items ──
+  const allInstItems=useMemo(()=>{
+    const items=[];
+    expenses.forEach(e=>{
+      if((e.installments||1)<=1)return;
+      const first=getVencimiento(e.date,e.paymentMethod);
+      const amt=Math.round(e.totalAmount/e.installments);
+      for(let i=0;i<e.installments;i++){
+        const due=cuotaDue(first,i);
+        // For visa/mp: use closing month as egreso, not due date month
+        let egresoYear=due.getFullYear(),egresoMonth=due.getMonth();
+        if(e.paymentMethod==="visa"){
+          const close=visaClose(due.getFullYear(),due.getMonth());
+          // due is always after close for visa (due = close+13 days, next month)
+          // so egreso month = close month = due month - 1 potentially
+          egresoYear=close.getFullYear();
+          egresoMonth=close.getMonth();
+        } else if(e.paymentMethod==="mercadopago"){
+          // mp close is day 18, due is day 23 — same month
+          egresoYear=due.getFullYear();
+          egresoMonth=due.getMonth();
+        }
+        items.push({expenseId:e.id,description:e.description,category:e.category,paymentMethod:e.paymentMethod,amount:amt,cuotaNum:i+1,totalCuotas:e.installments,dueDate:due,dueDateStr:d2s(due),egresoYear,egresoMonth});
+      }
+    });
+    return items;
+  },[expenses]);
+
+  // Simple expenses in this month
+  const simpleMonth=useMemo(()=>expenses.filter(e=>{
+    if((e.installments||1)>1)return false;
+    const em=getEgresoMonth(e.date,e.paymentMethod);
+    return em.year===fYear&&em.month===fMonth;
+  }),[expenses,fYear,fMonth]);
+
+  // Installments due this month
+  const instMonth=useMemo(()=>allInstItems.filter(i=>i.egresoYear===fYear&&i.egresoMonth===fMonth),[allInstItems,fYear,fMonth]);
+
+  // Incomes this month
+  const monthIncomes=useMemo(()=>incomes.filter(i=>i.date&&i.date.startsWith(filterMonth)),[incomes,filterMonth]);
+  const totalIncome=useMemo(()=>monthIncomes.reduce((s,i)=>s+i.amount,0),[monthIncomes]);
+
+  // Planned this month (manual)
+  const manualMonth=useMemo(()=>planned.filter(p=>p.dueDate&&p.dueDate.startsWith(filterMonth)),[planned,filterMonth]);
+
+  // paidPlannedAsExpenses: now stored directly in expenses array (isPaidPlanned:true)
+  const paidPlannedAsExpenses=useMemo(()=>[]  ,[]);
+
+  // Auto-planned: card totals
+  const autoPlanned=useMemo(()=>{
+    const allExp=[...simpleMonth,...instMonth];
+    const visaT=allExp.filter(e=>e.paymentMethod==="visa"&&!e.isNegative).reduce((s,e)=>s+e.amount,0);
+    const mpT=allExp.filter(e=>e.paymentMethod==="mercadopago"&&!e.isNegative).reduce((s,e)=>s+e.amount,0);
+    const items=[];
+    if(visaT>0){
+      const close=visaClose(fYear,fMonth);
+      const due=visaDue(close);
+      // Imputation month = closing month (not due month, which can fall next month)
+      items.push({
+        id:`auto-visa-${filterMonth}`,
+        description:"Pago Visa",
+        amount:visaT,
+        category:"otros",
+        dueDate:d2s(close), // shown as reference date in the closing month
+        realDueDate:d2s(due), // real payment date (informational)
+        autoGenerated:true,
+        paymentIcon:"💳",
+        cardType:"visa"
+      });
+    }
+    if(mpT>0){const due=mpDue(fYear,fMonth);items.push({id:`auto-mp-${filterMonth}`,description:"Pago Mercado Pago",amount:mpT,category:"otros",dueDate:d2s(due),autoGenerated:true,paymentIcon:"🔵",cardType:"mercadopago"});}
+    // Credit repayments (banco)
+    incomes.forEach(inc=>{
+      if(!inc.dueDate||!inc.returnAmount)return;
+      if(!inc.dueDate.startsWith(filterMonth))return;
+      if(inc.type==="credito"){
+        items.push({id:`auto-credit-${inc.id}`,description:`Devolución: ${inc.description}`,amount:inc.returnAmount,category:"prestamos",dueDate:inc.dueDate,autoGenerated:true,paymentIcon:"🔴"});
+      }
+    });
+    // Adelanto visa/mp: impute returnAmount to the egreso month of the income date
+    const visaAdelantoTotal=incomes.filter(inc=>{
+      if(inc.type!=="adelanto-visa"||!inc.returnAmount||!inc.date)return false;
+      const em=getEgresoMonth(inc.date,"visa");
+      return em.year===fYear&&em.month===fMonth;
+    }).reduce((s,inc)=>s+(inc.returnAmount||0),0);
+    const mpAdelantoTotal=incomes.filter(inc=>{
+      if(inc.type!=="adelanto-mp"||!inc.returnAmount||!inc.date)return false;
+      const em=getEgresoMonth(inc.date,"mercadopago");
+      return em.year===fYear&&em.month===fMonth;
+    }).reduce((s,inc)=>s+(inc.returnAmount||0),0);
+    // Update the visa and mp items already pushed with adelanto amounts
+    if(visaAdelantoTotal>0){
+      const visaItem=items.find(x=>x.cardType==="visa");
+      if(visaItem){visaItem.amount+=visaAdelantoTotal;visaItem.hasAdelanto=true;}
+      else{
+        const close=visaClose(fYear,fMonth);
+        const due=visaDue(close);
+        items.push({id:`auto-visa-${filterMonth}`,description:"Pago Visa",amount:visaAdelantoTotal,category:"otros",dueDate:d2s(close),realDueDate:d2s(due),autoGenerated:true,paymentIcon:"💳",cardType:"visa",hasAdelanto:true});
+      }
+    }
+    if(mpAdelantoTotal>0){
+      const mpItem=items.find(x=>x.cardType==="mercadopago");
+      if(mpItem){mpItem.amount+=mpAdelantoTotal;mpItem.hasAdelanto=true;}
+      else{
+        const due=mpDue(fYear,fMonth);
+        items.push({id:`auto-mp-${filterMonth}`,description:"Pago Mercado Pago",amount:mpAdelantoTotal,category:"otros",dueDate:d2s(due),autoGenerated:true,paymentIcon:"🔵",cardType:"mercadopago",hasAdelanto:true});
+      }
+    }
+    return items;
+  },[simpleMonth,instMonth,fYear,fMonth,filterMonth,incomes]);
+
+  const allPlanned=useMemo(()=>[
+    ...manualMonth.map(p=>({...p,paid:p.paid||false})),
+    ...autoPlanned.map(p=>({...p,paid:!!(autoPaid[p.id]),paidEgresoMonth:autoPaid[p.id]?.egresoMonth})),
+  ],[manualMonth,autoPlanned,autoPaid]);
+
+  // Total spent = simple + installments + paid planned (in their egreso month)
+  const totalSpent=useMemo(()=>{
+    // (A) Gastos en efectivo/cuenta imputados en este mes
+    const efectivo=[...simpleMonth,...instMonth]
+      .filter(e=>!e.isNegative&&!e.isPaidPlanned&&e.paymentMethod==="efectivo")
+      .reduce((s,e)=>s+e.amount,0);
+    // Reintegros (descuentos)
+    const reintegros=simpleMonth.filter(e=>e.isNegative&&!e.isPaidPlanned).reduce((s,e)=>s+e.amount,0);
+    // (B) Pagos de tarjeta cuyo egreso fue en este mes
+    // Ejemplo: si en junio pagué la tarjeta de mayo, se cuenta en junio
+    const cardPaid=Object.entries(autoPaid)
+      .filter(([id,data])=>data&&data.egresoMonth===filterMonth)
+      .reduce((s,[id,data])=>{
+        // Use realAmount if interest was added, otherwise use the card total at time of payment
+        return s+(data.realAmount||0);
+      },0);
+    // (C) Gastos planificados manuales pagados en este mes
+    const planPaid=planned
+      .filter(p=>p.paid&&p.paidEgresoMonth===filterMonth)
+      .reduce((s,p)=>s+(p.realAmount||p.amount),0);
+    return efectivo-reintegros+cardPaid+planPaid;
+  },[simpleMonth,instMonth,autoPaid,filterMonth,planned,paidPlannedAsExpenses]);
+
+  // Debug breakdown - shows every item counted in totalSpent
+  const spentBreakdown=useMemo(()=>{
+    const items=[];
+    // (A) Efectivo
+    [...simpleMonth,...instMonth]
+      .filter(e=>!e.isNegative&&!e.isPaidPlanned&&e.paymentMethod==="efectivo")
+      .forEach(e=>{
+        const cat=CATS.find(c=>c.id===e.category);
+        items.push({tipo:"💵 Efectivo", desc:e.description, fecha:e.date, monto:e.amount, cat:cat?.label||""});
+      });
+    // Reintegros
+    simpleMonth.filter(e=>e.isNegative&&!e.isPaidPlanned).forEach(e=>{
+      items.push({tipo:"✅ Reintegro", desc:e.description, fecha:e.date, monto:-e.amount, cat:""});
+    });
+    // (B) Pagos de tarjeta
+    Object.entries(autoPaid)
+      .filter(([id,data])=>data&&data.egresoMonth===filterMonth)
+      .forEach(([id,data])=>{
+        const label=id.includes("visa")?"💳 Pago Visa":"🔵 Pago MP";
+        items.push({tipo:label, desc:"Pago tarjeta (egreso "+data.egresoMonth+")", fecha:data.egresoMonth, monto:data.realAmount||0, cat:""});
+      });
+    // (C) Planificados pagados
+    planned.filter(p=>p.paid&&p.paidEgresoMonth===filterMonth).forEach(p=>{
+      const cat=CATS.find(c=>c.id===p.category);
+      const pm=PMS.find(x=>x.id===p.paidWith);
+      items.push({tipo:"📅 Planificado", desc:p.description, fecha:p.paidEgresoMonth, monto:p.realAmount||p.amount, cat:cat?.label||"", pm:pm?.label||""});
+    });
+    return items;
+  },[simpleMonth,instMonth,autoPaid,filterMonth,planned,paidPlannedAsExpenses]);
+
+  const totalPlanned=useMemo(()=>allPlanned.filter(p=>!p.paid).reduce((s,p)=>s+p.amount,0),[allPlanned]);
+  const remaining=totalIncome-totalSpent; // Available = income - actually spent (not pending planned)
+  const availableAfterPlanned=totalIncome-totalSpent-totalPlanned; // used internally for warnings
+  const totalReintegros=useMemo(()=>simpleMonth.filter(e=>e.isNegative&&!e.isPaidPlanned).reduce((s,e)=>s+e.amount,0),[simpleMonth]);
+
+  const byCategory=useMemo(()=>{
+    const map={};
+    // Efectivo gastos del mes
+    [...simpleMonth,...instMonth].forEach(e=>{
+      if(e.isNegative||e.isPaidPlanned)return;
+      if(e.paymentMethod==="efectivo") map[e.category]=(map[e.category]||0)+e.amount;
+    });
+    // Cuando se paga una tarjeta, distribuir sus gastos por categoria
+    Object.entries(autoPaid).forEach(([id,data])=>{
+      if(!data||data.egresoMonth!==filterMonth)return;
+      const cardType=id.includes("visa")?"visa":"mercadopago";
+      [...simpleMonth,...instMonth].filter(e=>e.paymentMethod===cardType&&!e.isNegative&&!e.isPaidPlanned)
+        .forEach(e=>{map[e.category]=(map[e.category]||0)+e.amount;});
+    });
+    // Planificados pagados este mes
+    planned.filter(p=>p.paid&&p.paidEgresoMonth===filterMonth)
+      .forEach(p=>{map[p.category]=(map[p.category]||0)+(p.realAmount||p.amount);});
+    return map;
+  },[simpleMonth,instMonth,autoPaid,filterMonth,planned]);
+
+  const byPayment=useMemo(()=>{
+    const map={};
+    // Efectivo gastos del mes
+    [...simpleMonth,...instMonth].forEach(e=>{
+      if(e.isNegative||e.isPaidPlanned)return;
+      if(e.paymentMethod==="efectivo") map["efectivo"]=(map["efectivo"]||0)+e.amount;
+    });
+    // Tarjetas pagadas este mes
+    Object.entries(autoPaid).forEach(([id,data])=>{
+      if(!data||data.egresoMonth!==filterMonth)return;
+      const item=autoPlanned.find(x=>x.id===id);
+      if(item&&item.cardType) map[item.cardType]=(map[item.cardType]||0)+item.amount;
+    });
+    // Planificados pagados este mes
+    planned.filter(p=>p.paid&&p.paidEgresoMonth===filterMonth).forEach(p=>{
+      const pm=p.paidWith||"efectivo";
+      map[pm]=(map[pm]||0)+(p.realAmount||p.amount);
+    });
+    return map;
+  },[simpleMonth,instMonth,autoPaid,filterMonth,autoPlanned,planned]);
+
+  const upcomingPlanned=useMemo(()=>allPlanned.filter(p=>!p.paid).sort((a,b)=>a.dueDate.localeCompare(b.dueDate)),[allPlanned]);
+
+  const cardBreakdown=useMemo(()=>{
+    const result={visa:[],mercadopago:[]};
+    // Simple expenses
+    simpleMonth.forEach(e=>{
+      if(e.isNegative||e.isPaidPlanned)return;
+      if(e.paymentMethod==="visa"||e.paymentMethod==="mercadopago"){
+        const cat=CATS.find(c=>c.id===e.category);
+        result[e.paymentMethod].push({key:"s-"+e.id,description:e.description,amount:e.amount,date:e.date,category:cat?.label||"",icon:cat?.icon||"📦",cuota:null});
+      }
+    });
+    // Installments
+    instMonth.forEach(i=>{
+      if(i.paymentMethod==="visa"||i.paymentMethod==="mercadopago"){
+        const cat=CATS.find(c=>c.id===i.category);
+        const orig=expenses.find(e=>e.id===i.expenseId);
+        result[i.paymentMethod].push({key:"i-"+i.expenseId+"-"+i.cuotaNum,description:i.description,amount:i.amount,date:orig?orig.date:i.dueDateStr,category:cat?.label||"",icon:cat?.icon||"📦",cuota:i.cuotaNum+"/"+i.totalCuotas});
+      }
+    });
+    // Add adelanto repayments to the respective card using egreso month of income date
+    incomes.forEach(inc=>{
+      if(!inc.returnAmount||!inc.date)return;
+      if(inc.type==="adelanto-visa"){
+        const em=getEgresoMonth(inc.date,"visa");
+        if(em.year===fYear&&em.month===fMonth){
+          result["visa"].push({key:"adv-"+inc.id,description:"Devolución adelanto: "+inc.description,amount:inc.returnAmount,date:inc.date,category:"Adelanto",icon:"💳",cuota:null});
+        }
+      } else if(inc.type==="adelanto-mp"){
+        const em=getEgresoMonth(inc.date,"mercadopago");
+        if(em.year===fYear&&em.month===fMonth){
+          result["mercadopago"].push({key:"adv-"+inc.id,description:"Devolución adelanto: "+inc.description,amount:inc.returnAmount,date:inc.date,category:"Adelanto",icon:"🔵",cuota:null});
+        }
+      }
+    });
+    return result;
+  },[simpleMonth,instMonth,expenses,incomes,fYear,fMonth]);
+
+  const cardDates=useMemo(()=>{
+    const vc=visaClose(fYear,fMonth),vd=visaDue(vc);
+    const mc=mpClose(fYear,fMonth),md=mpDue(fYear,fMonth);
+    return{visaClose:fmtDO(vc),visaDue:fmtDO(vd),mpClose:fmtDO(mc),mpDue:fmtDO(md)};
+  },[fYear,fMonth]);
+
+  // ── Actions ──
+  function addExpense(){
+    if(!expForm.description||!expForm.amount)return;
+    const inst=parseInt(expForm.installments)||1;
+    const base=parseFloat(expForm.amount);
+    const total=expForm.hasInterest&&expForm.finalAmount?parseFloat(expForm.finalAmount):base;
+    const id=newId();
+    setExp(p=>[...p,{...expForm,id,amount:inst>1?Math.round(total/inst):total,totalAmount:total,baseAmount:base,installments:inst,isNegative:false}]);
+    setExpForm(defExpForm);setShowAddExp(false);
+  }
+
+  function addIncome(){
+    if(!incForm.description||!incForm.amount)return;
+    const id=newId();
+    const isCreditType=incForm.type==="credito"||incForm.type==="adelanto-visa"||incForm.type==="adelanto-mp";
+    setInc(p=>[...p,{...incForm,id:`inc-${id}`,amount:parseFloat(incForm.amount),returnAmount:isCreditType&&incForm.returnAmount?parseFloat(incForm.returnAmount):null}]);
+    setIncForm(defIncForm);setShowAddInc(false);
+  }
+
+  function addPlanned(){
+    if(!planForm.description||!planForm.amount||!planForm.dueDate)return;
+    const id=newId();
+    const base=parseFloat(planForm.amount);
+    const final=planForm.hasInterest&&planForm.finalAmount?parseFloat(planForm.finalAmount):base;
+    setPlan(p=>[...p,{...planForm,id,amount:final,baseAmount:base,paid:false,autoGenerated:false}]);
+    setPlanForm(defPlanForm);setShowAddPlan(false);
+  }
+
+  function savePlan(){
+    if(!editingPlan)return;
+    const base=parseFloat(editingPlan.baseAmount||editingPlan.amount);
+    const final=editingPlan.hasInterest&&editingPlan.finalAmount?parseFloat(editingPlan.finalAmount):base;
+    setPlan(p=>p.map(x=>x.id===editingPlan.id?{...editingPlan,amount:final,baseAmount:base}:x));
+    setEditingPlan(null);
+  }
+
+  // Pay planned — open modal first, check balance after month is chosen
+  function tryPayPlanned(item){
+    setShowPayModal({id:item.id,type:item.autoGenerated?"auto":"manual",amount:item.amount,cardType:item.cardType,selectedPm:"efectivo",hasInterest:false,finalAmount:""});
+  }
+
+  // Calculate available funds for a given month key
+  function availableForMonth(mk){
+    const[y,m]=mk.split("-").map(Number);
+    const mInc=incomes.filter(i=>i.date&&i.date.startsWith(mk)).reduce((s,i)=>s+i.amount,0);
+    // expenses already imputed in that month
+    const mSimple=expenses.filter(e=>{
+      if((e.installments||1)>1)return false;
+      const em=getEgresoMonth(e.date,e.paymentMethod);
+      return em.year===y&&em.month===m-1;
+    }).reduce((s,e)=>s+(e.isNegative?-e.amount:e.amount),0);
+    // paid planned in that month
+    const mPaidPlan=planned.filter(p=>p.paid&&p.paidEgresoMonth===mk).reduce((s,p)=>s+p.amount,0);
+    // pending planned in that month
+    const mPendingPlan=planned.filter(p=>!p.paid&&p.dueDate&&p.dueDate.startsWith(mk)).reduce((s,p)=>s+p.amount,0);
+    return mInc-mSimple-mPaidPlan-mPendingPlan;
+  }
+
+  function confirmPay(pm,egresoMonth){
+    if(!showPayModal)return;
+    const{id,type,amount,hasInterest,finalAmount}=showPayModal;
+    const realAmount=hasInterest&&finalAmount?parseFloat(finalAmount):amount;
+    // Only check balance for efectivo payments — card payments don't require cash
+    if(pm==="efectivo"){
+      const avail=availableForMonth(egresoMonth);
+      if(avail<realAmount){
+        alert("⚠️ No tenés fondos suficientes en "+MONTHS[parseInt(egresoMonth.split("-")[1])-1]+".\n\nEn cuenta ese mes: "+fmtCur(avail)+"\nGasto: "+fmtCur(realAmount));
+        return;
+      }
+    }
+    const expId=newId();
+    // Save as real expense in the chosen egreso month
+    // We store it with a fake date = first day of egresoMonth so it appears there
+    const egresoDate=egresoMonth+"-01";
+    if(type==="auto"){
+      // Find description from autoPlanned
+      const apItem=autoPlanned.find(x=>x.id===id);
+      setAP(m=>({...m,[id]:{pm,egresoMonth,realAmount}}));
+      setExp(p=>[...p,{
+        id:expId,
+        date:egresoDate,
+        description:apItem?apItem.description:"Pago tarjeta",
+        amount:realAmount,
+        totalAmount:realAmount,
+        baseAmount:amount,
+        category:"otros",
+        paymentMethod:"efectivo",
+        installments:1,
+        isNegative:false,
+        isPaidPlanned:true,
+        fromPlannedId:id,
+      }]);
+    } else {
+      const planItem=planned.find(x=>x.id===id);
+      setPlan(p=>p.map(x=>x.id===id?{...x,paid:true,paidWith:pm,paidEgresoMonth:egresoMonth,realAmount}:x));
+      setExp(p=>[...p,{
+        id:expId,
+        date:egresoDate,
+        description:planItem?planItem.description:"Gasto planificado",
+        amount:realAmount,
+        totalAmount:realAmount,
+        baseAmount:amount,
+        category:planItem?planItem.category:"otros",
+        paymentMethod:pm,
+        installments:1,
+        isNegative:false,
+        isPaidPlanned:true,
+        fromPlannedId:id,
+      }]);
+    }
+    setShowPayModal(null);
+  }
+
+  function unpayManual(id){
+    setPlan(p=>p.map(x=>x.id===id?{...x,paid:false,paidWith:null,paidEgresoMonth:null,realAmount:null}:x));
+    setExp(p=>p.filter(e=>e.fromPlannedId!==id));
+  }
+  function unpayAuto(id){
+    setAP(m=>{const n={...m};delete n[id];return n;});
+    setExp(p=>p.filter(e=>e.fromPlannedId!==id));
+  }
+  function delExp(id){setExp(p=>p.filter(e=>e.id!==id));}
+  function delInc(id){setInc(p=>p.filter(i=>i.id!==id));}
+  function delPlan(id){setPlan(p=>p.filter(x=>x.id!==id));}
+
+  const pct=Math.min(100,Math.round(((totalSpent+totalPlanned)/(totalIncome||1))*100));
+  const monthName=MONTHS[fMonth];
+  function changeMonth(delta){const d=new Date(fYear,fMonth+delta,1);setFilterMonth(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`);}
+
+  const previewEgreso=useMemo(()=>{
+    if(!expForm.date||!expForm.paymentMethod)return null;
+    const inst=parseInt(expForm.installments)||1;
+    if(inst<=1){const em=getEgresoMonth(expForm.date,expForm.paymentMethod);return[{label:`${MONTHS[em.month]} ${em.year}`,cuota:null}];}
+    const first=getVencimiento(expForm.date,expForm.paymentMethod);
+    return Array.from({length:Math.min(inst,12)},(_,i)=>{const d=cuotaDue(first,i);return{label:`${MONTHS[d.getMonth()]} ${d.getFullYear()}`,cuota:i+1};});
+  },[expForm.date,expForm.paymentMethod,expForm.installments]);
+
+  // All expenses for search (simple + installments + paid planned)
+  const allExpensesForSearch=useMemo(()=>{
+    const items=[];
+    [...simpleMonth].forEach(e=>{const cat=CATS.find(c=>c.id===e.category);const pm=PMS.find(p=>p.id===e.paymentMethod);items.push({key:`s-${e.id}`,label:e.description,sub:`${fmtD(e.date)} · ${cat?.label}`,amount:e.amount,color:cat?.color,icon:cat?.icon,pmIcon:pm?.icon,pmColor:pm?.color,pmLabel:pm?.label,isNegative:e.isNegative,onDelete:()=>delExp(e.id)});});
+    instMonth.forEach(item=>{const cat=CATS.find(c=>c.id===item.category);const pm=PMS.find(p=>p.id===item.paymentMethod);const orig=expenses.find(e=>e.id===item.expenseId);items.push({key:`i-${item.expenseId}-${item.cuotaNum}`,label:`${item.description} (${item.cuotaNum}/${item.totalCuotas})`,sub:`Compra: ${orig?fmtD(orig.date):""} · ${cat?.label}`,amount:item.amount,color:cat?.color,icon:cat?.icon,pmIcon:pm?.icon,pmColor:pm?.color,pmLabel:pm?.label,isNegative:false,onDelete:()=>{if(window.confirm(`¿Borrar "${item.description}" y todas sus ${item.totalCuotas} cuotas?`))delExp(item.expenseId);}});});
+    paidPlannedAsExpenses.forEach(p=>{const cat=CATS.find(c=>c.id===p.category);const pm=PMS.find(x=>x.id===p.paidWith);items.push({key:`pp-${p.id}`,label:p.description,sub:`Planificado pagado · ${cat?.label}`,amount:p.amount,color:cat?.color,icon:cat?.icon,pmIcon:pm?.icon,pmColor:pm?.color,pmLabel:pm?.label,isNegative:false,isPaidPlanned:true,onDelete:null});});
+    return items;
+  },[simpleMonth,instMonth,paidPlannedAsExpenses,expenses]);
+
+  const filteredExpenses=useMemo(()=>{
+    if(!search.trim())return allExpensesForSearch;
+    const q=search.toLowerCase();
+    return allExpensesForSearch.filter(e=>e.label.toLowerCase().includes(q));
+  },[allExpensesForSearch,search]);
+
+  // Month options for pay egreso
+  const monthOptions=useMemo(()=>{
+    const opts=[];
+    for(let i=-1;i<=2;i++){const d=new Date(fYear,fMonth+i,1);opts.push({key:mkey(d.getFullYear(),d.getMonth()),label:MONTHS[d.getMonth()]+' '+d.getFullYear()});}
+    return opts;
+  },[fYear,fMonth]);
+
+  const[payEgresoMonth,setPayEgresoMonth]=useState(filterMonth);
+  useEffect(()=>setPayEgresoMonth(filterMonth),[showPayModal,filterMonth]);
+
+  // Interest widget reusable
+  function InterestWidget({form,setForm}){
+    const isTarjeta=form.paymentMethod==="visa"||form.paymentMethod==="mercadopago";
+    if(!isTarjeta)return null;
+    return(
+      <div style={{background:"rgba(245,158,11,.06)",border:"1px solid rgba(245,158,11,.2)",borderRadius:10,padding:"12px 14px"}}>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:form.hasInterest?12:0}}>
+          <span style={{fontSize:13,color:"#94a3b8"}}>¿Aplican intereses?</span>
+          <button onClick={()=>setForm(f=>({...f,hasInterest:!f.hasInterest,finalAmount:""}))} style={{background:form.hasInterest?"#f59e0b":"#252a3d",border:"none",borderRadius:20,padding:"4px 14px",color:form.hasInterest?"#0f1117":"#94a3b8",fontFamily:"inherit",fontSize:12,fontWeight:700,cursor:"pointer"}}>
+            {form.hasInterest?"Sí":"No"}
+          </button>
+        </div>
+        {form.hasInterest&&(
+          <div>
+            <label style={{fontSize:12,color:"#64748b",display:"block",marginBottom:4}}>Valor final con intereses</label>
+            <input className="input" type="number" placeholder="Total con intereses" value={form.finalAmount||""} onChange={e=>setForm(f=>({...f,finalAmount:e.target.value}))}/>
+            {form.amount&&form.finalAmount&&<div style={{marginTop:8,fontSize:12,color:"#f59e0b"}}>💸 Intereses: <strong>{fmtCur(parseFloat(form.finalAmount||0)-parseFloat(form.amount||0))}</strong></div>}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  return(
+    <div style={{minHeight:"100vh",background:"#0f1117",color:"#f1f5f9"}}>
+
+      {/* PIN overlay */}
+      {!unlocked&&(
+        <div style={{position:"fixed",inset:0,background:"#0f1117",display:"flex",alignItems:"center",justifyContent:"center",padding:24,zIndex:9999}}>
+          <div style={{background:"#181c2a",border:"1px solid #252a3d",borderRadius:20,padding:32,width:"100%",maxWidth:340,textAlign:"center"}}>
+            <div style={{width:64,height:64,borderRadius:16,background:"linear-gradient(135deg,#6366f1,#8b5cf6)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:32,margin:"0 auto 20px"}}>💰</div>
+            <div style={{fontSize:20,fontWeight:700,marginBottom:6}}>FinanzasApp</div>
+            <div style={{fontSize:13,color:"#64748b",marginBottom:24}}>Ingresá tu PIN para continuar</div>
+            <input type="password" inputMode="numeric" placeholder="● ● ● ● ● ●" value={pinInput} onChange={e=>setPinInput(e.target.value)} onKeyDown={e=>e.key==="Enter"&&tryUnlock()} style={{background:"#0f1117",border:`1px solid ${pinError?"#ef4444":"#252a3d"}`,borderRadius:12,padding:"14px 16px",color:"#f1f5f9",fontFamily:"inherit",fontSize:20,width:"100%",outline:"none",textAlign:"center",letterSpacing:8,marginBottom:pinError?8:16}} autoFocus/>
+            {pinError&&<div style={{color:"#ef4444",fontSize:13,marginBottom:16}}>PIN incorrecto, intentá de nuevo</div>}
+            <button className="btn-primary" style={{width:"100%",padding:"12px 20px",fontSize:15}} onClick={tryUnlock}>Entrar</button>
+          </div>
+        </div>
+      )}
+
+      {/* Header */}
+      <div style={{background:"#181c2a",borderBottom:"1px solid #252a3d",position:"sticky",top:0,zIndex:50}}>
+        <div style={{maxWidth:960,margin:"0 auto",padding:"14px 20px",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+          <div style={{display:"flex",alignItems:"center",gap:10}}>
+            <div style={{width:32,height:32,borderRadius:10,background:"linear-gradient(135deg,#6366f1,#8b5cf6)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:16}}>💰</div>
+            <span style={{fontWeight:700,fontSize:16,letterSpacing:-.5}}>FinanzasApp</span>
+          </div>
+          <div style={{display:"flex",alignItems:"center",gap:6}}>
+            <button className="btn-ghost" style={{padding:"6px 10px"}} onClick={()=>changeMonth(-1)}>‹</button>
+            <span style={{fontSize:13,fontWeight:600,color:"#94a3b8",minWidth:110,textAlign:"center"}}>{monthName} {fYear}</span>
+            <button className="btn-ghost" style={{padding:"6px 10px"}} onClick={()=>changeMonth(1)}>›</button>
+            <button className="btn-ghost" style={{padding:"6px 10px",marginLeft:4,fontSize:16}} onClick={()=>setShowCardInfo(true)}>🗓</button>
+          </div>
+        </div>
+      </div>
+
+      <div style={{maxWidth:960,margin:"0 auto",padding:"20px 16px 100px"}}>
+
+        {/* ── DASHBOARD ── */}
+        {view==="dashboard"&&(
+          <div className="fade-up">
+            {showDebug&&(
+              <div style={{background:"#1e2130",border:"2px solid #6366f1",borderRadius:14,padding:16,marginBottom:16}}>
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
+                  <div style={{fontSize:14,fontWeight:700,color:"#a5b4fc"}}>🔍 Detalle del Total Gastado</div>
+                  <button onClick={()=>setShowDebug(false)} style={{background:"transparent",border:"none",color:"#94a3b8",cursor:"pointer",fontSize:18,fontFamily:"inherit"}}>✕</button>
+                </div>
+                {spentBreakdown.length===0
+                  ?<div style={{color:"#64748b",fontSize:13,padding:"12px 0"}}>Sin ítems este mes</div>
+                  :spentBreakdown.map((item,i)=>(
+                    <div key={i} style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",padding:"8px 0",borderBottom:"1px solid #252a3d"}}>
+                      <div style={{flex:1,minWidth:0}}>
+                        <div style={{fontSize:11,color:"#6366f1",fontWeight:600}}>{item.tipo}</div>
+                        <div style={{fontSize:13,color:"#f1f5f9",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{item.desc}</div>
+                        <div style={{fontSize:11,color:"#64748b"}}>{item.fecha}{item.cat?" · "+item.cat:""}</div>
+                      </div>
+                      <div style={{fontFamily:"monospace",fontSize:13,fontWeight:700,color:item.monto<0?"#10b981":"#f1f5f9",marginLeft:12,flexShrink:0}}>
+                        {item.monto<0?"-":""}{new Intl.NumberFormat("es-AR",{style:"currency",currency:"ARS",maximumFractionDigits:0}).format(Math.abs(item.monto))}
+                      </div>
+                    </div>
+                  ))}
+                <div style={{display:"flex",justifyContent:"space-between",marginTop:12,paddingTop:10,borderTop:"2px solid #6366f1"}}>
+                  <span style={{fontSize:13,fontWeight:700,color:"#a5b4fc"}}>TOTAL</span>
+                  <span style={{fontFamily:"monospace",fontSize:14,fontWeight:700,color:"#6366f1"}}>{new Intl.NumberFormat("es-AR",{style:"currency",currency:"ARS",maximumFractionDigits:0}).format(totalSpent)}</span>
+                </div>
+              </div>
+            )}
+            <div className="card" style={{padding:20,marginBottom:16}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
+                <div>
+                  <div style={{fontSize:12,color:"#64748b",fontWeight:500,marginBottom:4}}>INGRESOS DEL MES</div>
+                  <div className="amount-display" style={{fontSize:28,fontWeight:700,color:"#10b981"}}>{fmtCur(totalIncome)}</div>
+                </div>
+                <button className="btn-green" style={{fontSize:12,padding:"8px 14px"}} onClick={()=>setShowAddInc(true)}>+ Ingreso</button>
+              </div>
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10}}>
+                {[
+                  {label:"Gastado",value:fmtCur(totalSpent),color:"#6366f1",bg:"rgba(99,102,241,.1)",onClick:()=>setShowDebug(d=>!d)},
+                  {label:"Previsto",value:fmtCur(totalPlanned),color:"#f59e0b",bg:"rgba(245,158,11,.1)"},
+                  {label:remaining>=0?"Disponible":"Excedido",value:fmtCur(Math.abs(remaining)),color:remaining>=0?"#10b981":"#ef4444",bg:remaining>=0?"rgba(16,185,129,.1)":"rgba(239,68,68,.1)",tooltip:remaining>=0?"Ingresos menos gastos efectuados":"Superaste tus ingresos"},
+                ].map(s=>(
+                  <div key={s.label} onClick={s.onClick} style={{background:s.bg,padding:14,borderRadius:12,textAlign:"center",cursor:s.onClick?"pointer":"default"}}>
+                    <div style={{fontSize:11,color:"#64748b",marginBottom:4}}>{s.label}{s.onClick&&<span style={{fontSize:9,marginLeft:4,color:"#6366f1"}}>▼</span>}</div>
+                    <div className="amount-display" style={{fontSize:13,fontWeight:700,color:s.color}}>{s.value}</div>
+                  </div>
+                ))}
+              </div>
+              {totalReintegros>0&&<div style={{marginTop:12,padding:"8px 12px",background:"rgba(16,185,129,.08)",borderRadius:10,fontSize:12,color:"#10b981"}}>✓ Reintegros: <strong>{fmtCur(totalReintegros)}</strong></div>}
+              {availableAfterPlanned<0&&<div style={{marginTop:12,padding:"8px 12px",background:"rgba(239,68,68,.08)",borderRadius:10,fontSize:12,color:"#ef4444"}}>⚠️ Tus gastos planificados superan el dinero disponible por <strong>{fmtCur(Math.abs(availableAfterPlanned))}</strong></div>}
+              <div className="progress-bar" style={{marginTop:14}}><div className="progress-fill" style={{width:`${pct}%`,background:pct>90?"#ef4444":pct>70?"#f59e0b":"#6366f1"}}/></div>
+              <div style={{fontSize:12,color:"#64748b",marginTop:6}}>{pct}% del ingreso comprometido (gastos efectuados + planificados)</div>
+            </div>
+
+            {Object.keys(byPayment).length>0&&(
+              <div className="card" style={{padding:20,marginBottom:16}}>
+                <div className="section-title">POR MEDIO DE PAGO</div>
+                {PMS.filter(pm=>byPayment[pm.id]).map(pm=>{const amt=byPayment[pm.id]||0;const p=Math.round((amt/(totalSpent||1))*100);return(<div key={pm.id} style={{marginBottom:12}}><div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}><span style={{fontSize:13,display:"flex",alignItems:"center",gap:6}}>{pm.icon} {pm.label}</span><span className="amount-display" style={{fontSize:13,fontWeight:600}}>{fmtCur(amt)}</span></div><div className="progress-bar"><div className="progress-fill" style={{width:`${p}%`,background:pm.color}}/></div></div>);})}
+              </div>
+            )}
+
+            <div className="card" style={{padding:20,marginBottom:16}}>
+              <div className="section-title">POR CATEGORÍA</div>
+              {CATS.filter(c=>byCategory[c.id]).length===0
+                ?<div style={{color:"#64748b",fontSize:14,textAlign:"center",padding:"20px 0"}}>Sin gastos este mes</div>
+                :CATS.filter(c=>byCategory[c.id]).sort((a,b)=>(byCategory[b.id]||0)-(byCategory[a.id]||0)).map(cat=>{const amt=byCategory[cat.id]||0;const p=Math.round((amt/(totalSpent||1))*100);return(<div key={cat.id} style={{marginBottom:12}}><div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}><span style={{fontSize:13,display:"flex",alignItems:"center",gap:6}}>{cat.icon} {cat.label}</span><span style={{display:"flex",gap:8,alignItems:"center"}}><span style={{fontSize:11,color:"#64748b"}}>{p}%</span><span className="amount-display" style={{fontSize:13,fontWeight:600}}>{fmtCur(amt)}</span></span></div><div className="progress-bar"><div className="progress-fill" style={{width:`${p}%`,background:cat.color}}/></div></div>);})}
+            </div>
+
+            {upcomingPlanned.length>0&&(
+              <div className="card" style={{padding:20}}>
+                <div className="section-title">PRÓXIMOS VENCIMIENTOS</div>
+                {upcomingPlanned.slice(0,6).map(p=>{const cat=CATS.find(c=>c.id===p.category);const daysLeft=Math.ceil((new Date(p.dueDate)-new Date())/86400000);return(<div key={p.id} className="row-item" style={{marginBottom:4}}><div style={{width:36,height:36,borderRadius:10,background:`${cat?.color||"#6b7280"}22`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18}}>{p.autoGenerated?(p.paymentIcon||"💳"):cat?.icon}</div><div style={{flex:1}}><div style={{fontSize:14,fontWeight:500,display:"flex",alignItems:"center",gap:6,flexWrap:"wrap"}}>{p.description}{p.autoGenerated&&<span className="auto-badge">Auto</span>}</div><div style={{fontSize:12,color:daysLeft<=3?"#ef4444":"#64748b"}}>{fmtD(p.dueDate)} · {daysLeft<0?"Vencido":daysLeft===0?"Hoy":`en ${daysLeft}d`}</div></div><div className="amount-display" style={{fontSize:14,fontWeight:700,color:"#f59e0b"}}>{fmtCur(p.amount)}</div></div>);})}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ── GASTOS ── */}
+        {view==="gastos"&&(
+          <div className="fade-up">
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
+              <div style={{fontSize:18,fontWeight:700}}>Mis Gastos</div>
+              <button className="btn-primary" onClick={()=>setShowAddExp(true)}>+ Agregar</button>
+            </div>
+            <input className="search-bar" placeholder="🔍  Buscar gasto..." value={search} onChange={e=>setSearch(e.target.value)}/>
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:16}}>
+              <div style={{background:"rgba(99,102,241,.1)",padding:14,borderRadius:12,textAlign:"center"}}><div style={{fontSize:11,color:"#64748b",marginBottom:4}}>TOTAL</div><div className="amount-display" style={{fontSize:15,fontWeight:700,color:"#6366f1"}}>{fmtCur(totalSpent)}</div></div>
+              <div style={{background:"rgba(16,185,129,.1)",padding:14,borderRadius:12,textAlign:"center"}}><div style={{fontSize:11,color:"#64748b",marginBottom:4}}>ÍTEMS</div><div className="amount-display" style={{fontSize:15,fontWeight:700,color:"#10b981"}}>{filteredExpenses.length}</div></div>
+            </div>
+            {filteredExpenses.length===0
+              ?<div className="card" style={{padding:40,textAlign:"center",color:"#64748b"}}>{search?"Sin resultados para tu búsqueda":"Sin gastos este mes."}</div>
+              :filteredExpenses.map(e=>(
+                <div key={e.key} className="card-sm row-item" style={{marginBottom:8}}>
+                  <div style={{width:40,height:40,borderRadius:10,background:`${e.color}22`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20}}>{e.icon}</div>
+                  <div style={{flex:1,minWidth:0}}>
+                    <div style={{fontSize:14,fontWeight:600,display:"flex",alignItems:"center",gap:6,flexWrap:"wrap"}}>
+                      {e.label}
+                      {e.isNegative&&<span className="neg-badge">Reintegro</span>}
+                      {e.isPaidPlanned&&<span className="paid-badge">Planificado</span>}
+                    </div>
+                    <div style={{fontSize:12,color:"#64748b",display:"flex",flexWrap:"wrap",gap:4,marginTop:2}}>
+                      <span>{e.sub}</span>
+                      {e.pmIcon&&<span className="pm-pill" style={{background:`${e.pmColor}22`,color:e.pmColor}}>{e.pmIcon} {e.pmLabel}</span>}
+                    </div>
+                  </div>
+                  <div className="amount-display" style={{fontSize:15,fontWeight:700,color:e.isNegative?"#10b981":"#f1f5f9"}}>{e.isNegative?"-":""}{fmtCur(e.amount)}</div>
+                  {e.onDelete&&<button className="action-btn" style={{color:"#ef4444"}} onClick={e.onDelete}>✕</button>}
+                </div>
+              ))}
+          </div>
+        )}
+
+        {/* ── INGRESOS ── */}
+        {view==="ingresos"&&(
+          <div className="fade-up">
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
+              <div style={{fontSize:18,fontWeight:700}}>Ingresos</div>
+              <button className="btn-green" onClick={()=>setShowAddInc(true)}>+ Agregar</button>
+            </div>
+            <div style={{background:"rgba(16,185,129,.1)",padding:16,borderRadius:14,marginBottom:16,textAlign:"center"}}>
+              <div style={{fontSize:12,color:"#64748b",marginBottom:4}}>TOTAL {monthName.toUpperCase()}</div>
+              <div className="amount-display" style={{fontSize:28,fontWeight:700,color:"#10b981"}}>{fmtCur(totalIncome)}</div>
+            </div>
+            {monthIncomes.length===0
+              ?<div className="card" style={{padding:40,textAlign:"center",color:"#64748b"}}>Sin ingresos este mes.</div>
+              :monthIncomes.map(i=>(
+                <div key={i.id} className="card-sm row-item" style={{marginBottom:8}}>
+                  <div style={{width:40,height:40,borderRadius:10,background:(i.type==="credito"||i.type==="adelanto-visa"||i.type==="adelanto-mp")?"rgba(239,68,68,.15)":"rgba(16,185,129,.15)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:20}}>
+                    {i.type==="adelanto-visa"?"💳":i.type==="adelanto-mp"?"🔵":i.type==="credito"?"🔴":"💰"}
+                  </div>
+                  <div style={{flex:1}}>
+                    <div style={{fontSize:14,fontWeight:600,display:"flex",alignItems:"center",gap:6}}>
+                      {i.description}
+                      {(i.type==="credito"||i.type==="adelanto-visa"||i.type==="adelanto-mp")&&(
+                        <span style={{background:"rgba(239,68,68,.15)",color:"#fca5a5",borderRadius:6,padding:"1px 6px",fontSize:10,fontWeight:700}}>
+                          {i.type==="adelanto-visa"?"Adelanto Visa":i.type==="adelanto-mp"?"Adelanto MP":"Crédito"}
+                        </span>
+                      )}
+                    </div>
+                    <div style={{fontSize:12,color:"#64748b"}}>
+                      {fmtD(i.date)}
+                      {i.type==="credito"&&i.dueDate&&<span style={{marginLeft:6,color:"#ef4444"}}>· Vence {fmtD(i.dueDate)}</span>}
+                      {i.type==="credito"&&i.returnAmount&&<span style={{marginLeft:6}}>· Devolver: {fmtCur(i.returnAmount)}</span>}
+                    </div>
+                  </div>
+                  <div className="amount-display" style={{fontSize:15,fontWeight:700,color:(i.type==="credito"||i.type==="adelanto-visa"||i.type==="adelanto-mp")?"#fca5a5":"#10b981"}}>+{fmtCur(i.amount)}</div>
+                  <button className="action-btn" style={{color:"#ef4444"}} onClick={()=>delInc(i.id)}>✕</button>
+                </div>
+              ))}
+          </div>
+        )}
+
+        {/* ── PLANIFICADOS ── */}
+        {view==="planificados"&&(
+          <div className="fade-up">
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
+              <div style={{fontSize:18,fontWeight:700}}>Gastos Planificados</div>
+              <button className="btn-primary" onClick={()=>setShowAddPlan(true)}>+ Agregar</button>
+            </div>
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:16}}>
+              <div style={{background:"rgba(245,158,11,.1)",padding:14,borderRadius:12,textAlign:"center"}}><div style={{fontSize:11,color:"#64748b",marginBottom:4}}>PENDIENTE</div><div className="amount-display" style={{fontSize:15,fontWeight:700,color:"#f59e0b"}}>{fmtCur(totalPlanned)}</div></div>
+              <div style={{background:remaining>=0?"rgba(16,185,129,.1)":"rgba(239,68,68,.1)",padding:14,borderRadius:12,textAlign:"center"}}><div style={{fontSize:11,color:"#64748b",marginBottom:4}}>EN CUENTA</div><div className="amount-display" style={{fontSize:15,fontWeight:700,color:remaining>=0?"#10b981":"#ef4444"}}>{fmtCur(remaining)}</div></div>
+            </div>
+
+            {/* Auto-planned (cards) */}
+            {autoPlanned.length>0&&(
+              <div style={{marginBottom:20}}>
+                <div className="section-title">PAGOS DE TARJETAS (AUTO)</div>
+                {autoPlanned.map(p=>{
+                  const apData=autoPaid[p.id];
+                  const isPaid=!!apData;
+                  const pm=PMS.find(x=>x.id===apData?.pm);
+                  const daysLeft=Math.ceil((new Date(p.dueDate)-new Date())/86400000);
+                  return(
+                    <div key={p.id} className="card-sm row-item" style={{marginBottom:8,opacity:isPaid?.5:1}}>
+                      <div style={{width:40,height:40,borderRadius:10,background:"rgba(245,158,11,.1)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,cursor:"pointer"}} onClick={()=>p.cardType&&setShowCardDetail(p.cardType)} title="Ver detalle">{p.paymentIcon}</div>
+                      <div style={{flex:1}}>
+                        <div style={{fontSize:14,fontWeight:600,display:"flex",alignItems:"center",gap:6,flexWrap:"wrap"}}>{p.description}<span className="auto-badge">Auto</span>{p.cardType&&<button onClick={()=>setShowCardDetail(p.cardType)} style={{background:"rgba(99,102,241,.15)",color:"#a5b4fc",border:"none",borderRadius:6,padding:"1px 7px",fontSize:11,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>Ver detalle</button>}</div>
+                        <div style={{fontSize:12,color:"#64748b",display:"flex",gap:6,flexWrap:"wrap"}}>
+                          <span>{p.cardType==="visa"?"Cierre":"Vence"} {fmtD(p.dueDate)}{p.realDueDate?" · Pago: "+fmtD(p.realDueDate):""}</span>
+                          {isPaid&&pm&&<span className="pm-pill" style={{background:`${pm.color}22`,color:pm.color}}>{pm.icon} {pm.label}</span>}
+                          {isPaid&&apData.egresoMonth&&<span style={{color:"#10b981"}}>· Egreso: {MONTHS[parseInt(apData.egresoMonth.split("-")[1])-1]}</span>}
+                          {!isPaid&&<span style={{color:daysLeft<=3?"#ef4444":"#94a3b8"}}>{daysLeft<0?"⚠ Vencido":daysLeft===0?"⚠ Hoy":`${daysLeft}d`}</span>}
+                        </div>
+                      </div>
+                      <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:6}}>
+                        <div className="amount-display" style={{fontSize:14,fontWeight:700,color:isPaid?"#64748b":"#f59e0b"}}>{fmtCur(p.amount)}</div>
+                        <button className="chip" style={{background:isPaid?"rgba(16,185,129,.15)":"rgba(99,102,241,.15)",color:isPaid?"#10b981":"#6366f1"}} onClick={()=>isPaid?unpayAuto(p.id):tryPayPlanned(p)}>
+                          {isPaid?"✓ Pagado":"Marcar pagado"}
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* Manual planned */}
+            {manualMonth.length>0&&(
+              <div>
+                <div className="section-title">OTROS GASTOS FIJOS</div>
+                {manualMonth.sort((a,b)=>a.dueDate.localeCompare(b.dueDate)).map(p=>{
+                  const cat=CATS.find(c=>c.id===p.category);
+                  const pm=PMS.find(x=>x.id===p.paidWith);
+                  const daysLeft=Math.ceil((new Date(p.dueDate)-new Date())/86400000);
+                  return(
+                    <div key={p.id} className="card-sm row-item" style={{marginBottom:8,opacity:p.paid?.5:1}}>
+                      <div style={{width:40,height:40,borderRadius:10,background:`${cat?.color}22`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20}}>{cat?.icon}</div>
+                      <div style={{flex:1}}>
+                        <div style={{fontSize:14,fontWeight:600,textDecoration:p.paid?"line-through":"none"}}>{p.description}</div>
+                        <div style={{fontSize:12,color:"#64748b",display:"flex",gap:6,flexWrap:"wrap"}}>
+                          <span>Vence {fmtD(p.dueDate)}</span>
+                          {p.recurring&&<span style={{color:"#6366f1"}}>↻</span>}
+                          {p.paid&&pm&&<span className="pm-pill" style={{background:`${pm.color}22`,color:pm.color}}>{pm.icon} {pm.label}</span>}
+                          {p.paid&&p.paidEgresoMonth&&<span style={{color:"#10b981"}}>· Egreso: {MONTHS[parseInt(p.paidEgresoMonth.split("-")[1])-1]}</span>}
+                          {!p.paid&&<span style={{color:daysLeft<=3?"#ef4444":"#94a3b8"}}>{daysLeft<0?"⚠ Vencido":daysLeft===0?"⚠ Hoy":`${daysLeft}d`}</span>}
+                        </div>
+                      </div>
+                      <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:6}}>
+                        <div className="amount-display" style={{fontSize:14,fontWeight:700,color:p.paid?"#64748b":"#f59e0b"}}>{fmtCur(p.amount)}</div>
+                        <button className="chip" style={{background:p.paid?"rgba(16,185,129,.15)":"rgba(99,102,241,.15)",color:p.paid?"#10b981":"#6366f1"}} onClick={()=>p.paid?unpayManual(p.id):tryPayPlanned(p)}>
+                          {p.paid?"✓ Pagado":"Marcar pagado"}
+                        </button>
+                      </div>
+                      <button className="action-btn" style={{color:"#6366f1"}} onClick={()=>setEditingPlan({...p})}>✎</button>
+                      <button className="action-btn" style={{color:"#ef4444"}} onClick={()=>delPlan(p.id)}>✕</button>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+            {allPlanned.length===0&&<div className="card" style={{padding:40,textAlign:"center",color:"#64748b"}}>Sin gastos planificados este mes.</div>}
+          </div>
+        )}
+      </div>
+
+      {/* Bottom Nav */}
+      <div style={{position:"fixed",bottom:0,left:0,right:0,background:"#181c2a",borderTop:"1px solid #252a3d",zIndex:50}}>
+        <div style={{maxWidth:960,margin:"0 auto",display:"flex",justifyContent:"space-around",padding:"8px 8px 16px"}}>
+          {[{id:"dashboard",icon:"📊",label:"Resumen"},{id:"ingresos",icon:"💰",label:"Ingresos"},{id:"gastos",icon:"💳",label:"Gastos"},{id:"planificados",icon:"📅",label:"Planificados"}].map(n=>(
+            <button key={n.id} className={`nav-item ${view===n.id?"active":""}`} onClick={()=>setView(n.id)}><span style={{fontSize:20}}>{n.icon}</span>{n.label}</button>
+          ))}
+        </div>
+      </div>
+
+      {/* FAB */}
+      <button onClick={()=>{if(view==="planificados")setShowAddPlan(true);else if(view==="ingresos")setShowAddInc(true);else setShowAddExp(true);}} style={{position:"fixed",bottom:90,right:20,width:52,height:52,borderRadius:"50%",background:"linear-gradient(135deg,#6366f1,#8b5cf6)",border:"none",color:"#fff",fontSize:24,cursor:"pointer",boxShadow:"0 4px 24px rgba(99,102,241,.4)",zIndex:60,display:"flex",alignItems:"center",justifyContent:"center"}}>+</button>
+
+      {/* ── MODAL: Nuevo gasto ── */}
+      {showAddExp&&(<div className="modal-bg" onClick={()=>setShowAddExp(false)}><div className="modal fade-up" onClick={e=>e.stopPropagation()}>
+        <div style={{fontSize:16,fontWeight:700,marginBottom:20}}>Nuevo Gasto</div>
+        <div style={{display:"flex",flexDirection:"column",gap:12}}>
+          <div><label style={{fontSize:12,color:"#64748b",display:"block",marginBottom:4}}>Fecha de compra</label><input className="input" type="date" value={expForm.date} onChange={e=>setExpForm(f=>({...f,date:e.target.value}))}/></div>
+          <input className="input" placeholder="Descripción" value={expForm.description} onChange={e=>setExpForm(f=>({...f,description:e.target.value}))}/>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+            <div><label style={{fontSize:12,color:"#64748b",display:"block",marginBottom:4}}>Monto total</label><input className="input" type="number" placeholder="Total" value={expForm.amount} onChange={e=>setExpForm(f=>({...f,amount:e.target.value}))}/></div>
+            <div><label style={{fontSize:12,color:"#64748b",display:"block",marginBottom:4}}>Cuotas</label><input className="input" type="number" min="1" max="48" placeholder="1" value={expForm.installments} onChange={e=>setExpForm(f=>({...f,installments:e.target.value}))}/></div>
+          </div>
+          {parseInt(expForm.installments)>1&&expForm.amount&&<div style={{background:"rgba(99,102,241,.08)",borderRadius:10,padding:"8px 12px",fontSize:13,color:"#a5b4fc"}}>💳 {parseInt(expForm.installments)} cuotas de <strong>{fmtCur(Math.round(parseFloat(expForm.amount)/parseInt(expForm.installments)))}</strong></div>}
+          <select className="input" value={expForm.category} onChange={e=>setExpForm(f=>({...f,category:e.target.value}))}>{CATS.map(c=><option key={c.id} value={c.id}>{c.icon} {c.label}</option>)}</select>
+          <div><label style={{fontSize:12,color:"#64748b",display:"block",marginBottom:8}}>Medio de pago</label><div style={{display:"flex",gap:8}}>{PMS.map(pm=>(<button key={pm.id} className={`pm-btn ${expForm.paymentMethod===pm.id?"selected":""}`} onClick={()=>setExpForm(f=>({...f,paymentMethod:pm.id,hasInterest:false,finalAmount:""}))}><div style={{fontSize:20,marginBottom:2}}>{pm.icon}</div><div style={{fontSize:10}}>{pm.label}</div></button>))}</div></div>
+          <InterestWidget form={expForm} setForm={setExpForm}/>
+          {previewEgreso&&expForm.paymentMethod!=="efectivo"&&<div style={{background:"rgba(99,102,241,.08)",border:"1px solid rgba(99,102,241,.2)",borderRadius:10,padding:"10px 14px"}}><div style={{fontSize:12,color:"#64748b",marginBottom:6}}>📅 Se imputará en:</div><div style={{display:"flex",flexWrap:"wrap",gap:6}}>{previewEgreso.map((item,i)=>(<span key={i} style={{background:"rgba(99,102,241,.2)",color:"#a5b4fc",borderRadius:6,padding:"2px 8px",fontSize:12,fontWeight:600}}>{item.cuota?`C${item.cuota}: `:""}{item.label}</span>))}</div></div>}
+          <div style={{display:"flex",gap:10,marginTop:4}}><button className="btn-ghost" style={{flex:1}} onClick={()=>setShowAddExp(false)}>Cancelar</button><button className="btn-primary" style={{flex:1}} onClick={addExpense}>Agregar</button></div>
+        </div>
+      </div></div>)}
+
+      {/* ── MODAL: Nuevo ingreso ── */}
+      {showAddInc&&(<div className="modal-bg" onClick={()=>setShowAddInc(false)}><div className="modal fade-up" onClick={e=>e.stopPropagation()}>
+        <div style={{fontSize:16,fontWeight:700,marginBottom:20}}>Nuevo Ingreso</div>
+        <div style={{display:"flex",flexDirection:"column",gap:12}}>
+          <div>
+            <label style={{fontSize:12,color:"#64748b",display:"block",marginBottom:8}}>Tipo de ingreso</label>
+            <div style={{display:"flex",gap:8,marginBottom:8}}>
+              {[{id:"ingreso",label:"Ingreso normal",icon:"💰"},{id:"credito",label:"Crédito/Adelanto",icon:"🔴"}].map(t=>(
+                <button key={t.id} className={`pm-btn ${(incForm.type===t.id||(incForm.type==="adelanto-visa"||incForm.type==="adelanto-mp")&&t.id==="credito")?"selected":""}`}
+                  onClick={()=>setIncForm(f=>{
+                    // If clicking "credito" and already on a subtype, keep subtype
+                    if(t.id==="credito"&&(f.type==="adelanto-visa"||f.type==="adelanto-mp"||f.type==="credito")) return f;
+                    return{...f,type:t.id};
+                  })}>
+                  <div style={{fontSize:20,marginBottom:2}}>{t.icon}</div>
+                  <div style={{fontSize:10}}>{t.label}</div>
+                </button>
+              ))}
+            </div>
+            {(incForm.type==="credito"||incForm.type==="adelanto-visa"||incForm.type==="adelanto-mp")&&(
+              <div>
+                <div style={{fontSize:12,color:"#64748b",marginBottom:6}}>Subtipo de crédito/adelanto:</div>
+                <div style={{display:"flex",flexDirection:"column",gap:6}}>
+                  {[
+                    {id:"credito",label:"Crédito / Adelanto banco",icon:"🏦",desc:"La devolución no afecta tarjetas"},
+                    {id:"adelanto-visa",label:"Adelanto Visa",icon:"💳",desc:"La devolución se suma al pago Visa del mes"},
+                    {id:"adelanto-mp",label:"Adelanto Mercado Pago",icon:"🔵",desc:"La devolución se suma al pago MP del mes"},
+                  ].map(s=>(
+                    <button key={s.id} onClick={()=>setIncForm(f=>({...f,type:s.id}))}
+                      style={{display:"flex",alignItems:"center",gap:12,padding:"10px 14px",background:incForm.type===s.id?"rgba(99,102,241,.15)":"#0f1117",border:`1px solid ${incForm.type===s.id?"#6366f1":"#252a3d"}`,borderRadius:10,cursor:"pointer",textAlign:"left",fontFamily:"inherit"}}>
+                      <span style={{fontSize:22}}>{s.icon}</span>
+                      <div>
+                        <div style={{fontSize:13,fontWeight:600,color:"#f1f5f9"}}>{s.label}</div>
+                        <div style={{fontSize:11,color:"#64748b"}}>{s.desc}</div>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+          <div><label style={{fontSize:12,color:"#64748b",display:"block",marginBottom:4}}>Fecha</label><input className="input" type="date" value={incForm.date} onChange={e=>setIncForm(f=>({...f,date:e.target.value}))}/></div>
+          <input className="input" placeholder="Descripción" value={incForm.description} onChange={e=>setIncForm(f=>({...f,description:e.target.value}))}/>
+          <div><label style={{fontSize:12,color:"#64748b",display:"block",marginBottom:4}}>{incForm.type==="credito"?"Monto recibido":"Monto"}</label><input className="input" type="number" placeholder="Monto" value={incForm.amount} onChange={e=>setIncForm(f=>({...f,amount:e.target.value}))}/></div>
+          {(incForm.type==="credito"||incForm.type==="adelanto-visa"||incForm.type==="adelanto-mp")&&(<>
+            <div><label style={{fontSize:12,color:"#64748b",display:"block",marginBottom:4}}>Monto a devolver (con intereses)</label><input className="input" type="number" placeholder="Total a devolver" value={incForm.returnAmount} onChange={e=>setIncForm(f=>({...f,returnAmount:e.target.value}))}/></div>
+            {incForm.type==="credito"&&(
+              <div><label style={{fontSize:12,color:"#64748b",display:"block",marginBottom:4}}>Fecha de vencimiento</label><input className="input" type="date" value={incForm.dueDate} onChange={e=>setIncForm(f=>({...f,dueDate:e.target.value}))}/></div>
+            )}
+            {(incForm.type==="adelanto-visa"||incForm.type==="adelanto-mp")&&(
+              <div style={{background:"rgba(99,102,241,.08)",border:"1px solid rgba(99,102,241,.2)",borderRadius:10,padding:"10px 14px",fontSize:13,color:"#a5b4fc"}}>
+                📅 La devolución se imputará automáticamente al resumen de {incForm.type==="adelanto-visa"?"Visa":"Mercado Pago"} del período correspondiente a la fecha de solicitud ({incForm.date?fmtD(incForm.date):"hoy"})
+              </div>
+            )}
+            {incForm.amount&&incForm.returnAmount&&<div style={{background:"rgba(239,68,68,.08)",border:"1px solid rgba(239,68,68,.2)",borderRadius:10,padding:"10px 14px",fontSize:13,color:"#fca5a5"}}>💸 Intereses: <strong>{fmtCur(parseFloat(incForm.returnAmount||0)-parseFloat(incForm.amount||0))}</strong></div>}
+          </>)}
+          <div style={{display:"flex",gap:10,marginTop:4}}><button className="btn-ghost" style={{flex:1}} onClick={()=>setShowAddInc(false)}>Cancelar</button><button className="btn-green" style={{flex:1}} onClick={addIncome}>Agregar</button></div>
+        </div>
+      </div></div>)}
+
+      {/* ── MODAL: Nuevo planificado ── */}
+      {showAddPlan&&(<div className="modal-bg" onClick={()=>setShowAddPlan(false)}><div className="modal fade-up" onClick={e=>e.stopPropagation()}>
+        <div style={{fontSize:16,fontWeight:700,marginBottom:20}}>Gasto Planificado</div>
+        <div style={{display:"flex",flexDirection:"column",gap:12}}>
+          <input className="input" placeholder="Descripción" value={planForm.description} onChange={e=>setPlanForm(f=>({...f,description:e.target.value}))}/>
+          <input className="input" type="number" placeholder="Monto" value={planForm.amount} onChange={e=>setPlanForm(f=>({...f,amount:e.target.value}))}/>
+          <select className="input" value={planForm.category} onChange={e=>setPlanForm(f=>({...f,category:e.target.value}))}>{CATS.map(c=><option key={c.id} value={c.id}>{c.icon} {c.label}</option>)}</select>
+          <div><label style={{fontSize:12,color:"#64748b",display:"block",marginBottom:4}}>Fecha de vencimiento</label><input className="input" type="date" value={planForm.dueDate} onChange={e=>setPlanForm(f=>({...f,dueDate:e.target.value}))}/></div>
+          <div><label style={{fontSize:12,color:"#64748b",display:"block",marginBottom:8}}>Medio de pago</label><div style={{display:"flex",gap:8}}>{PMS.map(pm=>(<button key={pm.id} className={`pm-btn ${planForm.paymentMethod===pm.id?"selected":""}`} onClick={()=>setPlanForm(f=>({...f,paymentMethod:pm.id,hasInterest:false,finalAmount:""}))}><div style={{fontSize:20,marginBottom:2}}>{pm.icon}</div><div style={{fontSize:10}}>{pm.label}</div></button>))}</div></div>
+          <InterestWidget form={planForm} setForm={setPlanForm}/>
+          <label style={{display:"flex",alignItems:"center",gap:8,cursor:"pointer",fontSize:14,color:"#94a3b8"}}><input type="checkbox" checked={planForm.recurring} onChange={e=>setPlanForm(f=>({...f,recurring:e.target.checked}))}/>Gasto recurrente mensual</label>
+          <div style={{display:"flex",gap:10,marginTop:4}}><button className="btn-ghost" style={{flex:1}} onClick={()=>setShowAddPlan(false)}>Cancelar</button><button className="btn-primary" style={{flex:1}} onClick={addPlanned}>Agregar</button></div>
+        </div>
+      </div></div>)}
+
+      {/* ── MODAL: Editar planificado ── */}
+      {editingPlan&&(<div className="modal-bg" onClick={()=>setEditingPlan(null)}><div className="modal fade-up" onClick={e=>e.stopPropagation()}>
+        <div style={{fontSize:16,fontWeight:700,marginBottom:20}}>Editar Gasto Planificado</div>
+        <div style={{display:"flex",flexDirection:"column",gap:12}}>
+          <input className="input" placeholder="Descripción" value={editingPlan.description} onChange={e=>setEditingPlan(p=>({...p,description:e.target.value}))}/>
+          <div><label style={{fontSize:12,color:"#64748b",display:"block",marginBottom:4}}>Monto{editingPlan.hasInterest?" (sin intereses)":""}</label><input className="input" type="number" value={editingPlan.baseAmount||editingPlan.amount} onChange={e=>setEditingPlan(p=>({...p,baseAmount:e.target.value}))}/></div>
+          <select className="input" value={editingPlan.category} onChange={e=>setEditingPlan(p=>({...p,category:e.target.value}))}>{CATS.map(c=><option key={c.id} value={c.id}>{c.icon} {c.label}</option>)}</select>
+          <div><label style={{fontSize:12,color:"#64748b",display:"block",marginBottom:4}}>Fecha de vencimiento</label><input className="input" type="date" value={editingPlan.dueDate} onChange={e=>setEditingPlan(p=>({...p,dueDate:e.target.value}))}/></div>
+          <div><label style={{fontSize:12,color:"#64748b",display:"block",marginBottom:8}}>Medio de pago</label><div style={{display:"flex",gap:8}}>{PMS.map(pm=>(<button key={pm.id} className={`pm-btn ${editingPlan.paymentMethod===pm.id?"selected":""}`} onClick={()=>setEditingPlan(p=>({...p,paymentMethod:pm.id,hasInterest:false,finalAmount:""}))}><div style={{fontSize:20,marginBottom:2}}>{pm.icon}</div><div style={{fontSize:10}}>{pm.label}</div></button>))}</div></div>
+          <InterestWidget form={editingPlan} setForm={setEditingPlan}/>
+          <label style={{display:"flex",alignItems:"center",gap:8,cursor:"pointer",fontSize:14,color:"#94a3b8"}}><input type="checkbox" checked={editingPlan.recurring||false} onChange={e=>setEditingPlan(p=>({...p,recurring:e.target.checked}))}/>Gasto recurrente mensual</label>
+          <div style={{display:"flex",gap:10,marginTop:4}}><button className="btn-ghost" style={{flex:1}} onClick={()=>setEditingPlan(null)}>Cancelar</button><button className="btn-primary" style={{flex:1}} onClick={savePlan}>Guardar</button></div>
+        </div>
+      </div></div>)}
+
+      {/* ── MODAL: Detalle gastos tarjeta ── */}
+      {showCardDetail&&(()=>{
+        const pm=PMS.find(p=>p.id===showCardDetail);
+        const items=cardBreakdown[showCardDetail]||[];
+        const total=items.reduce((s,i)=>s+i.amount,0);
+        return(
+          <div className="modal-bg" onClick={()=>setShowCardDetail(null)}>
+            <div className="modal fade-up" onClick={e=>e.stopPropagation()} style={{maxWidth:500}}>
+              <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:4}}>
+                <span style={{fontSize:24}}>{pm?.icon}</span>
+                <div>
+                  <div style={{fontSize:16,fontWeight:700}}>Detalle {pm?.label}</div>
+                  <div style={{fontSize:12,color:"#64748b"}}>{monthName} {fYear}</div>
+                </div>
+              </div>
+              <div style={{background:"rgba(245,158,11,.08)",borderRadius:10,padding:"10px 14px",marginBottom:16,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                <span style={{fontSize:13,color:"#64748b"}}>Total a pagar</span>
+                <span className="amount-display" style={{fontSize:16,fontWeight:700,color:"#f59e0b"}}>{fmtCur(total)}</span>
+              </div>
+              {items.length===0
+                ?<div style={{textAlign:"center",color:"#64748b",padding:"20px 0"}}>Sin gastos con esta tarjeta este mes</div>
+                :items.map(item=>(
+                  <div key={item.key} style={{display:"flex",alignItems:"center",gap:12,padding:"10px 0",borderBottom:"1px solid #252a3d"}}>
+                    <span style={{fontSize:20}}>{item.icon}</span>
+                    <div style={{flex:1,minWidth:0}}>
+                      <div style={{fontSize:14,fontWeight:500,display:"flex",alignItems:"center",gap:6}}>
+                        {item.description}
+                        {item.cuota&&<span className="cuota-badge">{item.cuota}</span>}
+                      </div>
+                      <div style={{fontSize:12,color:"#64748b"}}>{fmtD(item.date)} · {item.category}</div>
+                    </div>
+                    <div className="amount-display" style={{fontSize:14,fontWeight:700}}>{fmtCur(item.amount)}</div>
+                  </div>
+                ))}
+              <button className="btn-ghost" style={{width:"100%",marginTop:16}} onClick={()=>setShowCardDetail(null)}>Cerrar</button>
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* ── MODAL: Marcar como pagado ── */}
+      {showPayModal&&(<div className="modal-bg" onClick={()=>setShowPayModal(null)}><div className="modal fade-up" onClick={e=>e.stopPropagation()} style={{maxWidth:380}}>
+        <div style={{fontSize:16,fontWeight:700,marginBottom:4}}>Confirmar pago</div>
+        <div style={{fontSize:13,color:"#64748b",marginBottom:16}}>Monto: <strong style={{color:"#f1f5f9"}}>{fmtCur(showPayModal.amount)}</strong> · Disponible: <strong style={{color:remaining>=showPayModal.amount?"#10b981":"#ef4444"}}>{fmtCur(remaining)}</strong></div>
+
+        {/* Medio de pago */}
+        {showPayModal.type==="auto"
+          ?<div style={{background:"rgba(16,185,129,.08)",border:"1px solid rgba(16,185,129,.2)",borderRadius:10,padding:"10px 14px",fontSize:13,color:"#10b981",marginBottom:16}}>💵 Los pagos de tarjeta se realizan con Efectivo / Cuenta</div>
+          :<div style={{marginBottom:12}}><label style={{fontSize:12,color:"#64748b",display:"block",marginBottom:8}}>Medio de pago</label><div style={{display:"flex",gap:8}}>{PMS.map(pm=>(<button key={pm.id} className={`pm-btn ${(showPayModal.selectedPm||"efectivo")===pm.id?"selected":""}`} onClick={()=>setShowPayModal(m=>({...m,selectedPm:pm.id,hasInterest:false,finalAmount:""}))}><div style={{fontSize:20,marginBottom:2}}>{pm.icon}</div><div style={{fontSize:10}}>{pm.label}</div></button>))}</div></div>
+        }
+
+        {/* Intereses — para manuales pagados con tarjeta */}
+        {showPayModal.type==="manual"&&(showPayModal.selectedPm==="visa"||showPayModal.selectedPm==="mercadopago")&&(
+          <div style={{background:"rgba(245,158,11,.06)",border:"1px solid rgba(245,158,11,.2)",borderRadius:10,padding:"12px 14px",marginBottom:12}}>
+            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:showPayModal.hasInterest?12:0}}>
+              <span style={{fontSize:13,color:"#94a3b8"}}>¿Aplican intereses?</span>
+              <button onClick={()=>setShowPayModal(m=>({...m,hasInterest:!m.hasInterest,finalAmount:""}))} style={{background:showPayModal.hasInterest?"#f59e0b":"#252a3d",border:"none",borderRadius:20,padding:"4px 14px",color:showPayModal.hasInterest?"#0f1117":"#94a3b8",fontFamily:"inherit",fontSize:12,fontWeight:700,cursor:"pointer"}}>
+                {showPayModal.hasInterest?"Sí":"No"}
+              </button>
+            </div>
+            {showPayModal.hasInterest&&(
+              <div>
+                <label style={{fontSize:12,color:"#64748b",display:"block",marginBottom:4}}>Valor final con intereses</label>
+                <input className="input" type="number" placeholder="Total con intereses" value={showPayModal.finalAmount||""} onChange={e=>setShowPayModal(m=>({...m,finalAmount:e.target.value}))}/>
+                {showPayModal.amount&&showPayModal.finalAmount&&<div style={{marginTop:8,fontSize:12,color:"#f59e0b"}}>💸 Intereses: <strong>{fmtCur(parseFloat(showPayModal.finalAmount||0)-parseFloat(showPayModal.amount||0))}</strong></div>}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Mes de imputación — solo para pagos de tarjeta (auto) */}
+        {showPayModal.type==="auto"&&(
+          <div style={{marginBottom:16}}>
+            <label style={{fontSize:12,color:"#64748b",display:"block",marginBottom:6}}>¿En qué mes se imputa este gasto?</label>
+            <div style={{display:"flex",flexDirection:"column",gap:6}}>
+              {monthOptions.map(opt=>(
+                <button key={opt.key} onClick={()=>setPayEgresoMonth(opt.key)} style={{padding:"10px 14px",background:payEgresoMonth===opt.key?"rgba(99,102,241,.2)":"#0f1117",border:`1px solid ${payEgresoMonth===opt.key?"#6366f1":"#252a3d"}`,borderRadius:10,color:payEgresoMonth===opt.key?"#a5b4fc":"#94a3b8",fontFamily:"inherit",fontSize:13,fontWeight:600,cursor:"pointer",textAlign:"left"}}>
+                  {payEgresoMonth===opt.key?"✓ ":""}{opt.label}{opt.key===filterMonth?" (este mes)":""}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div style={{display:"flex",gap:10}}>
+          <button className="btn-ghost" style={{flex:1}} onClick={()=>setShowPayModal(null)}>Cancelar</button>
+          <button className="btn-primary" style={{flex:1}} onClick={()=>confirmPay(showPayModal.type==="auto"?"efectivo":(showPayModal.selectedPm||"efectivo"),showPayModal.type==="auto"?payEgresoMonth:filterMonth)}>Confirmar pago</button>
+          {/* Note: interest and finalAmount are read from showPayModal inside confirmPay */}
+        </div>
+      </div></div>)}
+
+      {/* ── MODAL: Fechas tarjetas ── */}
+      {showCardInfo&&(<div className="modal-bg" onClick={()=>setShowCardInfo(false)}><div className="modal fade-up" onClick={e=>e.stopPropagation()}>
+        <div style={{fontSize:16,fontWeight:700,marginBottom:4}}>📅 Fechas de tarjetas</div>
+        <div style={{fontSize:12,color:"#64748b",marginBottom:20}}>{monthName} {fYear}</div>
+        {[{name:"Visa",icon:"💳",color:"#1a56db",close:cardDates.visaClose,due:cardDates.visaDue},{name:"Mercado Pago",icon:"🔵",color:"#009ee3",close:cardDates.mpClose,due:cardDates.mpDue}].map(c=>(<div key={c.name} style={{background:"#0f1117",borderRadius:12,padding:16,marginBottom:12}}><div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12}}><span style={{fontSize:20}}>{c.icon}</span><span style={{fontWeight:700,color:c.color}}>{c.name}</span></div><div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>{[{label:"Cierre",value:c.close,color:"#ef4444"},{label:"Vencimiento",value:c.due,color:"#f59e0b"}].map(item=>(<div key={item.label} style={{background:"#181c2a",borderRadius:10,padding:12,textAlign:"center"}}><div style={{fontSize:11,color:"#64748b",marginBottom:4}}>{item.label}</div><div className="amount-display" style={{fontSize:15,fontWeight:700,color:item.color}}>{item.value}</div></div>))}</div></div>))}
+        <button className="btn-ghost" style={{width:"100%",marginTop:8}} onClick={()=>setShowCardInfo(false)}>Cerrar</button>
+      </div></div>)}
+
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>
